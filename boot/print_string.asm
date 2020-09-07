@@ -1,3 +1,4 @@
+[bits 16]
 ;	BX <- ADDR string
 print_string:
 	pusha

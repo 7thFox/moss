@@ -35,7 +35,7 @@ print_hex:
 	ret
 
 _print_hex_data:
-	db '0x0000', 0x0A, 0x0D, 0
+	db '0x0000', 0
 
 _print_hex_make_ascii:
 	add al, 0x30; ascii '0'

@@ -2,43 +2,56 @@
 ; MOSS boot sector startup program
 ;
 
-[org 0x7c00]
-main:
-	mov [BOOT_DRIVE], dl	; Store boot drive for later
+KERNEL_OFFSET equ 0x1000
 
-	mov bp, 0x8000		; Init Stack
+[org 0x7c00]
+[bits 16]
+	mov [BOOT_DRIVE], dl
+
+	mov bp, 0x9000
 	mov sp, bp
 
-	mov bx, BOOT_MSG	; Boot message
+	mov bx, RD_MSG
 	call print_string
-	
-	mov bx, 0x9000
-	mov dh, 2
+	mov bx, KERNEL_OFFSET
+	mov dh, 15
 	mov dl, [BOOT_DRIVE]
-	call disk_load		; Load 5 sectors into 0x9000 (with es offset)
+	call disk_load	
 
-	mov dx, [0x9000] 	; print first word
-	call print_hex
+	mov bx, PM_MSG
+	call print_string
 
-	mov dx, [0x9000 + 512] 	; print first word from second sector
-	call print_hex
+	call switch_to_pm
 
 	jmp $
 
-; Globals
-BOOT_DRIVE:	db 0 
-BOOT_MSG:	db 'MOSS: Booting...', 0x0A, 0x0D, 0
+BOOT_DRIVE: db 0
+RD_MSG: db 'Reading in additional sectors...', 0xA, 0xD, 0
+PM_MSG: db 'Booting to 32-bit protected mode...', 0xA, 0xD, 0
 
 ; Includes
-%include "./boot/print_string.asm"
-%include "./boot/print_hex.asm"
 %include "./boot/disk_load.asm"
+%include "./boot/print_string.asm"
+%include "./boot/gdt.asm"
+%include "./boot/switch_to_pm.asm"
+
+[bits 32]
+BEGIN_PM:
+	call KERNEL_OFFSET
+;	mov al, 'X'
+;	mov ah, WH_ON_BLK
+;	mov [VIDEO_MEM], ax
+
+	
+
+	jmp $
+
+VIDEO_MEM equ 0xb8000
+WH_ON_BLK equ 0x0f
 
 times 510-($-$$) db 0 ; Fill to 512 - 2 bytes
 
 dw 0xaa55 ; OS boot sector magic string
-
 ; End BIOS boot sector load
 
-times 256 dw 0xdada
-times 256 dw 0xface
+
