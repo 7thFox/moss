@@ -4,11 +4,13 @@ version = "0.1.0"
 authors = ["7thFox <dev7thFox@gmail.com>"]
 edition = "2018"
 
-[dependencies]
-
 [lib]
 crate-type = ["staticlib"]
-name = "kernel"
-bench = false
-path = "kernel/main.rs"
 
+[dependencies]
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
